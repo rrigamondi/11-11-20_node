@@ -1,9 +1,18 @@
 let socket = io();
 
+let myColor = 'white';
+let strokeSize = 25;
+
 socket.on('connect', newConnection);
+socket.on('mouseBroadcast', otherMouse);
+socket.on('color', setColor);
 
 function newConnection(){
   console.log("your id: " + socket.id);
+}
+
+function setColor(assignedColor){
+  myColor = assignedColor;
 }
 
 function preload(){
@@ -12,8 +21,8 @@ function preload(){
 
 function setup() {
   createCanvas(windowWidth,windowHeight)
-  background('yellow')
-  // put setup code here
+  background('black');
+  noStroke();
 }
 
 function draw() {
@@ -21,10 +30,31 @@ function draw() {
 }
 
 function mouseMoved(){
-  ellipse(mouseX, mouseY, 20);
-  let message = {
-    x: mouseX,
-    y: mouseY
-  };
-  socket.emit('mouseMoved', message);
+  push();
+    fill(myColor);
+    stroke(myColor);
+    strokeWeight(strokeSize);
+    line(mouseX, mouseY, pmouseX, pmouseY);
+    noStroke()
+    ellipse(mouseX, mouseY, strokeSize);
+    let message = {
+      x: mouseX,
+      y: mouseY,
+      px: pmouseX,
+      py: pmouseY,
+      col: myColor
+    };
+    socket.emit('mouseMoved', message);
+  pop();
+}
+
+function otherMouse(data){
+  push();
+    fill(data.col);
+    stroke(data.col);
+    strokeWeight(strokeSize);
+    line(data.x, data.y, data.px, data.py);
+    noStroke()
+    ellipse(data.x, data.y, strokeSize);
+  pop();
 }
